@@ -8,4 +8,5 @@ import { SharedModule } from '../shared/shared.module';
   exports: [],
   providers: [],
 })
+
 export class CoreModule {}
