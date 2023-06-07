@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../src/environments/enviroment';
-import { map, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 import { User } from '../model/User/User'
 import { UserData } from '../model/User/UserData';
 import { UserSettings } from '../model/User/UserSettings';
@@ -11,14 +11,13 @@ import { UserSettings } from '../model/User/UserSettings';
   providedIn: 'root',
 })
 export class AuthService {
-  isLoggedIn = false;
   private currentUserSubject: BehaviorSubject<User>;
   public currentUser: Observable<any>;
 
 
   constructor(private http: HttpClient) {
     this.currentUserSubject = new BehaviorSubject<User>(
-      JSON.parse(localStorage.getItem('user'))['user']
+      JSON.parse(localStorage.getItem('user'))
     );
     this.currentUser = this.currentUserSubject.asObservable();
   }
@@ -37,8 +36,6 @@ export class AuthService {
         tap((user: any) => {
           localStorage.setItem('user', JSON.stringify(user));
           this.currentUserSubject.next(user);
-          this.isLoggedIn = true;
-          console.log(this.isLoggedIn);
         })
       );
   }
@@ -46,26 +43,43 @@ export class AuthService {
   logout() {
     localStorage.removeItem('user');
     this.currentUserSubject.next(new User(0,"","","","",new UserData("","","",new UserSettings({},{},false),[]),new Date()));
-    this.isLoggedIn = false;
   }
 
-  public isAuthenticated(): boolean {
-    console.log(this.currentUserValue.expDate)
+  public isAuthenticated():  boolean {
     // console.log(user.getExpDate())
-    // const expiresAt = this.currentUserValue.expDate.getTime();
-    // if (new Date().getTime() < expiresAt) {
-    //   // Variable is still valid, use the value
-    //   console.log("session valida");
-    // } else {
-    //   // Variable has expired, remove it from localStorage
-    //   console.log("session invalida");
-    // }
-    // console.log(this.isLoggedIn)
-    return true;
+    try {
+      const expiresAt = Date.parse(this.currentUserValue.expDate.toString())
+      if (new Date().getTime() < expiresAt) {
+        // Variable is still valid, use the value
+        // console.log("session valida");
+        return true;
+
+      } else {
+        // Variable has expired, remove it from localStorage
+        // console.log("session invalida");
+        return false;
+      }
+    } catch (err) {
+      return ;
+    }
   }
 
-  public isAuthenticatedOrRefresh(): boolean {
-    console.log(this.currentUserSubject.value);
-    return true;
+  public isAuthenticatedOrRefresh(): Observable<boolean>  {
+    try {
+      const expiresAt = Date.parse(this.currentUserValue.expDate.toString())
+      if (new Date().getTime() < expiresAt) {
+        // Variable is still valid, use the value
+        console.log("session aun valida");
+        return of(true);
+      } else {
+        // Variable has expired, remove it from localStorage
+        return this.http.post(`${environment.apiUrl}/auth/refresh-token/`, {}).pipe(
+          map(() => true), // Return true if the request is successful
+          catchError(() => of(false)) // Return false if there is an error
+        );
+      }
+    } catch (err) {
+      return of(false);
+    }
   }
 }

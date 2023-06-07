@@ -9,7 +9,8 @@ import { AuthService } from '../auth.service';
   templateUrl: './login.component.html',
   // styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+  isLoggedIn: boolean = false;
   loginForm: FormGroup | null;
   loading = false;
   submitted = false;
@@ -23,15 +24,26 @@ export class LoginComponent {
     private router: Router,
     private authenticationService: AuthService
   ) {
-    if (this.authenticationService.isLoggedIn) {
-      this.router.navigate(['/']); // redirect to home
-    }
-    this.message = this.getMessage();
+    this.authenticationService.isAuthenticatedOrRefresh().subscribe(value => {
+      if(value === true) {
+        console.log(value)
+        this.isLoggedIn = value;
+        //no funciona correctamente la redireccion
+
+      }
+    })
+
     this.loginForm = this.formBuilder.group({
       email: ['', Validators.required],
       password: ['', Validators.required],
     });
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+  }
+
+  ngOnInit(): void {
+      if(this.isLoggedIn) {
+        this.router.navigate(['/'])
+      }
   }
 
   get f() {
@@ -54,7 +66,6 @@ export class LoginComponent {
         {
           next: (data) => {
             // Handle the next emitted value
-            this.authenticationService.isLoggedIn = true;
             this.router.navigate([this.returnUrl]);
           },
           error: (error) => {
@@ -64,15 +75,10 @@ export class LoginComponent {
           },
           complete: () => {
             // Handle the completion of the observable
-            this.message = this.getMessage();
             this.submitted = false;
             this.loading = false;
           }
         }
       );
-  }
-
-  getMessage() {
-    return 'Logged ' + (this.authenticationService.isLoggedIn ? 'in' : 'out');
   }
 }
