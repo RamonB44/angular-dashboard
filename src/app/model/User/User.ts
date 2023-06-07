@@ -7,6 +7,7 @@ export class User {
   firstName: string;
   lastName: string;
   userData: UserData;
+  expDate: Date;
 
   constructor(
     uuid: number,
@@ -14,7 +15,8 @@ export class User {
     from: string,
     firstName: string,
     lastName: string,
-    userData : UserData
+    userData : UserData,
+    expDate: Date
   ) {
     this.uuid = uuid;
     this.role = role;
@@ -22,6 +24,7 @@ export class User {
     this.firstName = firstName;
     this.lastName = lastName;
     this.userData = userData;
+    this.expDate = expDate;
   }
 
   getUuid(): number {
@@ -70,5 +73,13 @@ export class User {
 
   setUserData(userData: UserData): void {
     this.userData = userData;
+  }
+
+  getExpDate(): Date {
+    return this.expDate;
+  }
+
+  setExpDate(expDate: Date): void {
+    this.expDate = expDate;
   }
 }

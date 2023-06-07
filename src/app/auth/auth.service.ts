@@ -18,7 +18,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     this.currentUserSubject = new BehaviorSubject<User>(
-      JSON.parse(localStorage.getItem('user'))
+      JSON.parse(localStorage.getItem('user'))['user']
     );
     this.currentUser = this.currentUserSubject.asObservable();
   }
@@ -45,15 +45,27 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('user');
-    this.currentUserSubject.next(new User(0,"","","","",new UserData("","","",new UserSettings({},{},false),[])));
+    this.currentUserSubject.next(new User(0,"","","","",new UserData("","","",new UserSettings({},{},false),[]),new Date()));
     this.isLoggedIn = false;
   }
 
   public isAuthenticated(): boolean {
-    return this.isLoggedIn;
+    console.log(this.currentUserValue.expDate)
+    // console.log(user.getExpDate())
+    // const expiresAt = this.currentUserValue.expDate.getTime();
+    // if (new Date().getTime() < expiresAt) {
+    //   // Variable is still valid, use the value
+    //   console.log("session valida");
+    // } else {
+    //   // Variable has expired, remove it from localStorage
+    //   console.log("session invalida");
+    // }
+    // console.log(this.isLoggedIn)
+    return true;
   }
 
-  isAuthenticatedOrRefresh(): boolean {
+  public isAuthenticatedOrRefresh(): boolean {
+    console.log(this.currentUserSubject.value);
     return true;
   }
 }
