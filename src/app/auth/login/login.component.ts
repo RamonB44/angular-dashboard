@@ -7,8 +7,10 @@ import { AuthService } from '../auth.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
+  valCheck: string[] = ['remember'];
   loginForm: FormGroup | null;
   loading = false;
   submitted = false;
@@ -30,11 +32,13 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.authenticationService.isAuthenticatedOrRefresh().then((isAuthenticated) => {
-      if (isAuthenticated) {
-        this.router.navigate(['/']);
-      }
-    });
+    this.authenticationService
+      .isAuthenticatedOrRefresh()
+      .then((isAuthenticated) => {
+        if (isAuthenticated) {
+          this.router.navigate(['/']);
+        }
+      });
   }
 
   /**
@@ -69,7 +73,7 @@ export class LoginComponent implements OnInit {
         complete: () => {
           this.submitted = false;
           this.loading = false;
-        }
+        },
       });
   }
 }
