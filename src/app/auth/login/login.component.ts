@@ -7,10 +7,8 @@ import { AuthService } from '../auth.service';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  // styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
-  isLoggedIn: boolean = false;
   loginForm: FormGroup | null;
   loading = false;
   submitted = false;
@@ -24,15 +22,6 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private authenticationService: AuthService
   ) {
-    this.authenticationService.isAuthenticatedOrRefresh().subscribe(value => {
-      if(value === true) {
-        console.log(value)
-        this.isLoggedIn = value;
-        //no funciona correctamente la redireccion
-
-      }
-    })
-
     this.loginForm = this.formBuilder.group({
       email: ['', Validators.required],
       password: ['', Validators.required],
@@ -41,19 +30,26 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-      if(this.isLoggedIn) {
-        this.router.navigate(['/'])
+    this.authenticationService.isAuthenticatedOrRefresh().then((isAuthenticated) => {
+      if (isAuthenticated) {
+        this.router.navigate(['/']);
       }
+    });
   }
 
+  /**
+   * Get the form controls for convenient access in the template.
+   */
   get f() {
     return this.loginForm.controls;
   }
 
+  /**
+   * Handle form submission.
+   */
   onSubmit() {
     this.submitted = true;
 
-    // stop here if form is invalid
     if (this.loginForm.invalid) {
       return;
     }
@@ -62,23 +58,18 @@ export class LoginComponent implements OnInit {
     this.authenticationService
       .login(this.f.email.value, this.f.password.value)
       .pipe(first())
-      .subscribe(
-        {
-          next: (data) => {
-            // Handle the next emitted value
-            this.router.navigate([this.returnUrl]);
-          },
-          error: (error) => {
-            // Handle any error that occurs
-            this.error = error;
-            this.loading = false;
-          },
-          complete: () => {
-            // Handle the completion of the observable
-            this.submitted = false;
-            this.loading = false;
-          }
+      .subscribe({
+        next: (data) => {
+          this.router.navigate([this.returnUrl]);
+        },
+        error: (error) => {
+          this.error = error;
+          this.loading = false;
+        },
+        complete: () => {
+          this.submitted = false;
+          this.loading = false;
         }
-      );
+      });
   }
 }

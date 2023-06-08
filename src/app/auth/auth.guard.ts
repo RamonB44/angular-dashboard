@@ -10,7 +10,6 @@ export const AuthGuard = () => {
     return true;
   }
 
-
   // Redirect to the login page
   return router.parseUrl('/login');
 };
