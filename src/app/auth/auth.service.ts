@@ -8,7 +8,7 @@ import { UserData } from '../model/User/UserData';
 import { UserSettings } from '../model/User/UserSettings';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthService {
   private currentUserSubject: BehaviorSubject<User>;
@@ -48,7 +48,6 @@ export class AuthService {
    * Logout the current user.
    */
   logout = () => {
-    localStorage.removeItem('user');
     this.currentUserSubject.next(
       new User(
         0,
@@ -60,6 +59,8 @@ export class AuthService {
         new Date()
       )
     );
+    localStorage.removeItem('user');
+
   };
 
   /**

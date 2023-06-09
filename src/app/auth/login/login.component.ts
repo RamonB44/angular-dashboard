@@ -3,13 +3,14 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 import { AuthService } from '../auth.service';
+import { LayoutService } from 'src/app/layout/service/app.layout.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   valCheck: string[] = ['remember'];
   loginForm: FormGroup | null;
   loading = false;
@@ -22,25 +23,18 @@ export class LoginComponent implements OnInit {
     private formBuilder: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private authenticationService: AuthService
+    private authenticationService: AuthService,
+    public layoutService: LayoutService
   ) {
+    if (this.authenticationService.isAuthenticated()) {
+      this.router.navigate(['/']);
+    }
     this.loginForm = this.formBuilder.group({
       email: ['', Validators.required],
       password: ['', Validators.required],
     });
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
-
-  ngOnInit(): void {
-    this.authenticationService
-      .isAuthenticatedOrRefresh()
-      .then((isAuthenticated) => {
-        if (isAuthenticated) {
-          this.router.navigate(['/']);
-        }
-      });
-  }
-
   /**
    * Get the form controls for convenient access in the template.
    */
