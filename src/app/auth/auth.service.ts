@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../src/environments/enviroment'
+import { environment } from '../../../src/environments/enviroment';
 import { catchError, map, tap } from 'rxjs/operators';
 import { User } from '../model/User/User';
 import { UserData } from '../model/User/UserData';
 import { UserSettings } from '../model/User/UserSettings';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private currentUserSubject: BehaviorSubject<User>;
@@ -36,7 +36,11 @@ export class AuthService {
    */
   login = (email: string, password: string) =>
     this.http
-      .post(`${environment.apiUrl}/auth/login/`, { email, password })
+      .post(
+        `${environment.apiUrl}/auth/login/`,
+        { email, password },
+        { withCredentials: true }
+      )
       .pipe(
         tap((user: any) => {
           localStorage.setItem('user', JSON.stringify(user));
@@ -48,6 +52,9 @@ export class AuthService {
    * Logout the current user.
    */
   logout = () => {
+    this.http
+      .post(`${environment.apiUrl}/auth/logout/`, {}, { withCredentials: true })
+      .subscribe();
     this.currentUserSubject.next(
       new User(
         0,
@@ -60,7 +67,7 @@ export class AuthService {
       )
     );
     localStorage.removeItem('user');
-
+    // make a http request to logout
   };
 
   /**
@@ -86,14 +93,23 @@ export class AuthService {
       if (new Date().getTime() < expiresAt) {
         return of(true);
       } else {
-        return this.http.post(`${environment.apiUrl}/auth/refresh-token/`, {}).pipe(
-          tap((data: any) => {
-            this.currentUserValue.expDate = data.expDate;
-            localStorage.setItem('user', JSON.stringify(this.currentUserValue));
-          }),
-          map(() => true),
-          catchError(() => of(false))
-        );
+        return this.http
+          .post(
+            `${environment.apiUrl}/auth/refresh-token/`,
+            {},
+            { withCredentials: true }
+          )
+          .pipe(
+            tap((data: any) => {
+              this.currentUserValue.expDate = data.expDate;
+              localStorage.setItem(
+                'user',
+                JSON.stringify(this.currentUserValue)
+              );
+            }),
+            map(() => true),
+            catchError(() => of(false))
+          );
       }
     } catch {
       return of(false);

@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppRoutingModule } from './app-routing.module';
 import { AppLayoutModule } from './layout/app.layout.module';
 import { NotfoundComponent } from './components/notfound/notfound.component';
+import { HttpClientModule } from '@angular/common/http';
 @NgModule({
   declarations: [AppComponent, NotfoundComponent],
   imports: [
@@ -15,7 +16,8 @@ import { NotfoundComponent } from './components/notfound/notfound.component';
     // CoreModule,
     AuthModule,
     AppRoutingModule,
-    AppLayoutModule
+    AppLayoutModule,
+    HttpClientModule
   ],
   bootstrap: [AppComponent],
 })

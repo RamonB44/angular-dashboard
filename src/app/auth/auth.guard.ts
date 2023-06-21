@@ -1,17 +1,29 @@
-import { Injectable, OnInit, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Injectable, inject } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
 
-export const AuthGuard = () => {
-  const router = inject(Router);
-  const authService = inject(AuthService);
+@Injectable({
+  providedIn: 'root'
+})
+class AuthSession {
+  constructor(private authService: AuthService, private router: Router) {}
 
-  authService
-  .isAuthenticatedOrRefresh()
-  .then((isAuthenticated) => {
+  async canActivate(): Promise<boolean | UrlTree> {
+    const isAuthenticated = await this.authService.isAuthenticatedOrRefresh();
     if (isAuthenticated) {
       return true;
     }
-    return router.parseUrl('/auth/login');
-  });
+    return this.router.parseUrl('/auth/login');
+  }
+}
+
+/**
+ * Show the main page if exists an open work execution or if exists a session
+ * saved in the cookies.
+ * @param route
+ * @param state
+ * @returns
+ */
+export const AuthGuard : CanActivateFn =  (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  return inject(AuthSession).canActivate();
 };
